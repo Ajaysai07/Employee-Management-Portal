@@ -30,6 +30,10 @@ class UserDashboard:
         user_index = user_rows.index[0]
         user_data = df.loc[user_index]
 
+        # -------- ADDED SECTION (fix .0 in phone numbers) --------
+        contact_clean = str(user_data["Contact"]).replace(".0", "")
+        # ---------------------------------------------------------
+
         st.markdown("# 👨‍💼 Employee Dashboard")
         st.success(f"Welcome {user_data['Name']}")
 
@@ -57,7 +61,7 @@ class UserDashboard:
             with st.form("profile"):
 
                 name = st.text_input("Name", user_data["Name"])
-                contact = st.text_input("Mobile Number", user_data["Contact"])
+                contact = st.text_input("Mobile Number", value=f"+91 {contact_clean}" if not str(contact_clean).startswith("+91") else contact_clean)
 
                 st.text_input("Email", user_data["Email"], disabled=True)
                 st.text_input("Department", user_data["Department"], disabled=True)

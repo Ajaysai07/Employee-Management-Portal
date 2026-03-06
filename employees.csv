@@ -1,3 +1,4 @@
 Employee ID,Name,Email,Contact,Department,Role,Salary,Joining Date,Password
 EMP001,Kurnool Ajay Sai,kurnool.ajay.sai@company.com,7892448823,IT,DevOps Engineer,110000,2026-03-05,7324983bb5e58fcaff5c6161654cbfb3216b246efe8642b83a52bee5006372f1
-EMP002,Kurnool Pavan Kumar,kurnool.pavan.kumar@company.com,9491335850,Sales,Business Development Executive,55000,2026-03-05,a9b69f27184a3a2789ca5061476336f130fe76ec04e0baeb58c64891f2182157
+EMP002,Kurnool Pavan Kumar,kurnool.pavan.kumar@company.com,9491335850.0,Sales,Business Development Executive,55000,2026-03-05,a9b69f27184a3a2789ca5061476336f130fe76ec04e0baeb58c64891f2182157
+EMP003,K Madhuri,k.madhuri@company.com,8393994456,Finance,Payroll Specialist,45000,2026-03-06,3fa764a4f9838dbf40d9f348b83f16ce94af04e82828b8ecf0e43b03d824402e

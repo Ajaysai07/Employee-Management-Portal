@@ -46,7 +46,7 @@ class AdminDashboard:
             ]
         )
 
-        #  CREATE EMPLOYEE 
+        # CREATE EMPLOYEE
         if menu == "Create Employee":
 
             st.subheader("Create Employee")
@@ -126,8 +126,8 @@ class AdminDashboard:
 
                 elif os.path.exists(CSV_FILE):
 
-                    df = pd.read_csv(CSV_FILE)
-
+                    df = pd.read_csv(CSV_FILE ,dtype={"contact":str})
+                    df["Contact"] = df["Contact"].astype(str).str.replace(".0","", regex=False)
                     if emp_id in df["Employee ID"].astype(str).values:
                         st.error("Employee ID already exists")
                         return
@@ -157,15 +157,15 @@ class AdminDashboard:
                 st.success("Employee Created Successfully")
                 st.info(f"Temporary Password: {password}")
 
-        #  VIEW EMPLOYEES 
+        # VIEW EMPLOYEES
         elif menu == "View Employees":
 
             st.subheader("All Employees")
 
             if os.path.exists(CSV_FILE):
 
-                df = pd.read_csv(CSV_FILE)
-
+                df = pd.read_csv(CSV_FILE ,dtype={"contact":str})
+                df["Contact"] = df["Contact"].astype(str).str.replace(".0","", regex=False)
                 st.dataframe(
                     df.drop(columns=["Password"], errors="ignore"),
                     use_container_width=True
@@ -174,14 +174,15 @@ class AdminDashboard:
             else:
                 st.info("No employees yet.")
 
-        #  EDIT EMPLOYEE 
+        # EDIT EMPLOYEE
         elif menu == "Edit Employee":
 
             if not os.path.exists(CSV_FILE):
                 st.info("No employees available")
                 return
 
-            df = pd.read_csv(CSV_FILE)
+            df = pd.read_csv(CSV_FILE ,dtype={"contact":str})
+            df["Contact"] = df["Contact"].astype(str).str.replace(".0","", regex=False)
 
             emp = st.selectbox("Select Employee", df["Employee ID"].astype(str))
 
@@ -191,7 +192,7 @@ class AdminDashboard:
 
             name = st.text_input("Name", emp_data["Name"])
             email = st.text_input("Email", emp_data["Email"])
-            contact = st.text_input("Contact", emp_data["Contact"])
+            contact = st.text_input("Mobile Number", emp_data["Contact"])
             department = st.text_input("Department", emp_data["Department"])
             role = st.text_input("Role", emp_data["Role"])
             salary = st.text_input("Salary", emp_data["Salary"])
@@ -214,7 +215,7 @@ class AdminDashboard:
 
                 st.success("Employee Updated Successfully")
 
-        #  REMOVE EMPLOYEE 
+        # REMOVE EMPLOYEE
         elif menu == "Remove Employee":
 
             st.subheader("Remove Employee")
@@ -223,7 +224,8 @@ class AdminDashboard:
                 st.info("No employees available")
                 return
 
-            df = pd.read_csv(CSV_FILE)
+            df = pd.read_csv(CSV_FILE ,dtype={"contact":str})
+            df["Contact"] = df["Contact"].astype(str).str.replace(".0","", regex=False)
 
             emp = st.selectbox(
                 "Select Employee to Remove",
@@ -233,13 +235,12 @@ class AdminDashboard:
             if st.button("Delete Employee"):
 
                 df = df[df["Employee ID"].astype(str) != str(emp)]
-
                 df.to_csv(CSV_FILE, index=False)
 
                 st.success(f"Employee {emp} removed successfully")
                 st.rerun()
 
-        #  ASSIGN TASK 
+        # ASSIGN TASK
         elif menu == "Assign Task":
 
             if not os.path.exists(CSV_FILE):
@@ -261,7 +262,8 @@ class AdminDashboard:
                     "Employee ID": emp_id,
                     "Task": task,
                     "Status": "Pending",
-                    "Submission": ""
+                    "Submission": "",
+                    "Admin Comment": ""
                 }])
 
                 task_data.to_csv(
@@ -295,18 +297,20 @@ class AdminDashboard:
 
                     st.write("Employee ID:", tasks.loc[task_index, "Employee ID"])
                     st.write("Task:", tasks.loc[task_index, "Task"])
-
-                    if "Submission" in tasks.columns:
-                        st.write("Submission:", tasks.loc[task_index, "Submission"])
+                    st.write("Submission:", tasks.loc[task_index, "Submission"])
 
                     status = st.selectbox(
                         "Update Status",
                         ["Pending", "Submitted", "Approved", "Rejected"]
                     )
 
+                    admin_comment = st.text_area("Admin Comment")
+
                     if st.button("Update Task Status"):
 
                         tasks.loc[task_index, "Status"] = status
+                        tasks.loc[task_index, "Admin Comment"] = admin_comment
+
                         tasks.to_csv(TASKS_FILE, index=False)
 
                         st.success("Task Status Updated")
@@ -317,7 +321,146 @@ class AdminDashboard:
             else:
                 st.info("No tasks yet.")
 
-        #  LOGOUT 
+        # TICKETS
+        elif menu == "Tickets":
+
+            st.subheader("Employee Tickets")
+
+            if os.path.exists(TICKETS_FILE):
+
+                tickets = pd.read_csv(TICKETS_FILE)
+
+                if tickets.empty:
+                    st.info("No tickets yet.")
+
+                else:
+
+                    ticket_index = st.selectbox(
+                        "Select Ticket",
+                        tickets.index,
+                        format_func=lambda x: f"{tickets.loc[x,'Employee Name']} - {tickets.loc[x,'Title']}"
+                    )
+
+                    st.write("Employee:", tickets.loc[ticket_index, "Employee Name"])
+                    st.write("Title:", tickets.loc[ticket_index, "Title"])
+                    st.write("Description:", tickets.loc[ticket_index, "Description"])
+
+                    status = st.selectbox(
+                        "Update Status",
+                        ["Open", "In Progress", "Resolved", "Closed"]
+                    )
+
+                    admin_reply = st.text_area("Admin Reply")
+
+                    if st.button("Update Ticket"):
+
+                        tickets.loc[ticket_index, "Status"] = status
+
+                        if "Admin Reply" not in tickets.columns:
+                            tickets["Admin Reply"] = ""
+
+                        tickets.loc[ticket_index, "Admin Reply"] = admin_reply
+
+                        tickets.to_csv(TICKETS_FILE, index=False)
+
+                        st.success("Ticket Updated Successfully")
+                        st.rerun()
+
+                    st.dataframe(tickets, use_container_width=True)
+
+            else:
+                st.info("No tickets yet.")
+
+        # RECOMMENDATIONS
+        elif menu == "Recommendations":
+
+            st.subheader("Employee Recommendations")
+
+            if os.path.exists(RECOMMEND_FILE):
+
+                rec = pd.read_csv(RECOMMEND_FILE)
+
+                if rec.empty:
+                    st.info("No recommendations yet.")
+
+                else:
+
+                    rec_index = st.selectbox(
+                        "Select Recommendation",
+                        rec.index,
+                        format_func=lambda x: f"{rec.loc[x,'Employee Name']}"
+                    )
+
+                    st.write("Employee:", rec.loc[rec_index, "Employee Name"])
+                    st.write("Recommendation:", rec.loc[rec_index, "Recommendation"])
+
+                    admin_comment = st.text_area("Admin Comment")
+
+                    if st.button("Save Comment"):
+
+                        if "Admin Comment" not in rec.columns:
+                            rec["Admin Comment"] = ""
+
+                        rec.loc[rec_index, "Admin Comment"] = admin_comment
+
+                        rec.to_csv(RECOMMEND_FILE, index=False)
+
+                        st.success("Comment Saved Successfully")
+                        st.rerun()
+
+                    st.dataframe(rec, use_container_width=True)
+
+            else:
+                st.info("No recommendations yet.")
+
+        # ADMIN SETTINGS
+        elif menu == "Admin Settings":
+
+            st.subheader("Admin Profile")
+
+            if not os.path.exists(ADMIN_FILE):
+                st.error("Admin file missing")
+                return
+
+            admin_df = pd.read_csv(ADMIN_FILE)
+
+            st.write("### Admin Details")
+
+            name = st.text_input("Admin Name", admin_df.loc[0, "Name"])
+            email = st.text_input("Admin Email", admin_df.loc[0, "Email"])
+
+            st.write("### Change Password")
+
+            current_password = st.text_input("Current Password", type="password")
+            new_password = st.text_input("New Password", type="password")
+            confirm_password = st.text_input("Confirm Password", type="password")
+
+            if st.button("Update Admin Settings"):
+
+                stored_password = admin_df.loc[0, "Password"]
+                hashed_current = hashlib.sha256(current_password.encode()).hexdigest()
+
+                if hashed_current != stored_password:
+                    st.error("Current password is incorrect")
+
+                elif new_password != confirm_password:
+                    st.error("New passwords do not match")
+
+                else:
+
+                    admin_df.loc[0, "Name"] = name
+                    admin_df.loc[0, "Email"] = email
+
+                    if new_password:
+                        admin_df.loc[0, "Password"] = hashlib.sha256(new_password.encode()).hexdigest()
+
+                    admin_df.to_csv(ADMIN_FILE, index=False)
+
+                    st.session_state["admin_name"] = name
+
+                    st.success("Admin profile updated successfully")
+
+        # LOGOUT
         elif menu == "Logout":
 
             st.session_state.clear()
